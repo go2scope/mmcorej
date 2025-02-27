@@ -1,0 +1,3 @@
+[submodule "mmCoreAndDevices"]
+	path = mmCoreAndDevices
+	url = git@github.com:go2scope/mmCoreAndDevicesSD.git
