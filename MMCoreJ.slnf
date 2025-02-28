@@ -1,0 +1,11 @@
+{
+  "solution": {
+    "path": "mmCoreAndDevices\\micromanager.sln",
+    "projects": [
+      "MMCoreJ_wrap\\MMCoreJ_wrap.vcxproj",
+      "MMCore\\MMCore.vcxproj",
+      "MMDevice\\MMDevice-SharedRuntime.vcxproj",
+      "MMDevice\\MMDevice-StaticRuntime.vcxproj"
+    ]
+  }
+}
