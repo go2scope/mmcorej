@@ -19,8 +19,12 @@
     		</and>
 		</condition>
 	</target>
+	<target name="deps">
+		<ant antfile="buildscripts/fetchdeps.xml" target="resolve" />
+	</target>
 	<target name="build">
 		<antcall target="compile" />
+		<antcall target="jarbundle" />
 		<antcall target="stage" />
 	</target>
 	<target name="clean" depends="clean.win" />
@@ -52,6 +56,8 @@
 			<arg value="/p:platform=x64" />
 			<arg value="/m" />
 		</exec>
+	</target>	
+	<target name="jarbundle">
 	</target>
 	<target name="stage.win" if="os.iswindows" depends="test.os">
       <echo message="Running stage on Windows system" />
