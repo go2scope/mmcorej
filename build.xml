@@ -1,9 +1,10 @@
 <project default="build" name="MMCoreJ build">
 	<property name="build.number" value="0" />
 	<property name="build.dir" value="./build" />
+	<property name="deps.dir" value="./dependencies/artifacts/compile" />
 	<property name="install.dir" value="./install" />
-   <property environment="env" />
-   <target name="test.os">
+	<property environment="env" />
+	<target name="test.os">
 		<condition property="os.iswindows">
 			<os family="windows" />
 		</condition>
@@ -27,6 +28,10 @@
 		<antcall target="jarbundle" />
 		<antcall target="stage" />
 	</target>
+	<target name="rebuild">
+		<antcall target="clean" />
+		<antcall target="build" />
+	</target>
 	<target name="clean" depends="clean.win" />
 	<target name="compile" depends="compile.win" />
 	<target name="stage" depends="stage.win" />
@@ -46,6 +51,7 @@
 		<delete includeemptydirs="true">
 			<fileset dir="." includes="**/Release/**" />
 		</delete>
+		<delete dir="mmCoreAndDevices/build" />
 	</target>
 	<target name="compile.win" if="os.iswindows" depends="test.os">
       <echo message="Running build on Windows system" />
@@ -58,9 +64,22 @@
 		</exec>
 	</target>	
 	<target name="jarbundle">
+		<delete dir="mmCoreAndDevices/MMCoreJ_wrap/bin" />
+		<mkdir dir="mmCoreAndDevices/MMCoreJ_wrap/bin" />
+		<copy todir="mmCoreAndDevices/build/intermediates/Swig/mmcorej">
+			<fileset dir="./mmCoreAndDevices/MMCoreJ_wrap/src/main/java/mmcorej">
+    			<include name="**/*.java"/>
+			</fileset>
+		</copy>
+		<javac destdir="mmCoreAndDevices/MMCoreJ_wrap/bin" includeantruntime="false" source="7" target="7" encoding="UTF-8">
+			<src path="mmCoreAndDevices/build/intermediates/Swig/mmcorej" />
+		</javac>
+		<jar destfile="${build.dir}/x64/MMCoreJ.jar">
+			<fileset dir="mmCoreAndDevices/MMCoreJ_wrap/bin" />
+		</jar>
 	</target>
 	<target name="stage.win" if="os.iswindows" depends="test.os">
-      <echo message="Running stage on Windows system" />
+		<echo message="Running stage on Windows system" />
 		<mkdir dir="${build.dir}/x64" />
 		<copy todir="${build.dir}/x64">
 			<fileset dir="./mmCoreAndDevices/build/Release/x64/">
