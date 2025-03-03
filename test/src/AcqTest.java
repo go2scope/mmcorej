@@ -1,4 +1,5 @@
 import mmcorej.CMMCore;
+import mmcorej.StrVector;
 import mmcorej.TaggedImage;
 
 public class AcqTest {
@@ -14,9 +15,16 @@ public class AcqTest {
             // enable verbose logging
             core.enableStderrLog(true);
             core.enableDebugLog(true);
+            System.out.println(core.getVersionInfo());
+            System.out.println(core.getAPIVersionInfo());
+
+            // set device adapter path to default
+            StrVector searchPaths = new StrVector();
+            searchPaths.add("C:\\Program Files\\Micro-Manager-2.0");
+            core.setDeviceAdapterSearchPaths(searchPaths);
 
             // load the demo camera device
-           core.loadDevice(camera, "DemoCamera", "DCam");
+            core.loadDevice(camera, "DemoCamera", "DCam");
 
             // initialize the system, this will in turn initialize each device
             core.initializeAllDevices();
@@ -48,8 +56,14 @@ public class AcqTest {
             core.startSequenceAcquisition(imgcount, 0.0, true);
 
             for(int i = 0; i < imgcount; i++) {
+                // let the buffer fill
+                while (core.getRemainingImageCount() == 0) {
+                    System.out.println("Waiting for images...");
+                    Thread.sleep(20);
+                }
                 // fetch the image
                 img = core.popNextTaggedImage();
+                System.out.println("Got image " + (i + 1));
 
                 // Add image index to the image metadata
                 img.tags.put("Image-index", imgind);
