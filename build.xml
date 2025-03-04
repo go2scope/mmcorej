@@ -2,7 +2,7 @@
 	<property name="build.number" value="0" />
 	<property name="build.dir" value="./build" />
 	<property name="deps.dir" value="./dependencies/artifacts/compile" />
-	<property name="install.dir" value="./install" />
+	<property name="install.dir" value="./dist" />
 	<property environment="env" />
 	<target name="test.os">
 		<condition property="os.iswindows">
@@ -20,6 +20,47 @@
     		</and>
 		</condition>
 	</target>
+	<target name="ver">
+		<property name="verFile" value="./mmCoreAndDevices/MMCore/MMCore.cpp" />
+		<loadfile property="verMajor" srcfile="${verFile}">
+			<filterchain>
+				<linecontainsregexp>
+					<regexp pattern="const int MMCore_versionMajor\s=\s(\d+), MMCore_versionMinor\s=\s(\d+), MMCore_versionPatch\s=\s(\d+);*" />
+				</linecontainsregexp>
+				<tabstospaces />
+				<striplinebreaks />
+				<tokenfilter>
+					<replaceregex pattern="const int MMCore_versionMajor\s=\s(\d+), MMCore_versionMinor\s=\s(\d+), MMCore_versionPatch\s=\s(\d+);*" replace="\1" flags="g" />
+				</tokenfilter>
+			</filterchain>
+		</loadfile>
+		<loadfile property="verMinor" srcfile="${verFile}">
+			<filterchain>
+				<linecontainsregexp>
+					<regexp pattern="const int MMCore_versionMajor\s=\s(\d+), MMCore_versionMinor\s=\s(\d+), MMCore_versionPatch\s=\s(\d+);*" />
+				</linecontainsregexp>
+				<tabstospaces />
+				<striplinebreaks />
+				<tokenfilter>
+					<replaceregex pattern="const int MMCore_versionMajor\s=\s(\d+), MMCore_versionMinor\s=\s(\d+), MMCore_versionPatch\s=\s(\d+);*" replace="\2" flags="g" />
+				</tokenfilter>
+			</filterchain>
+		</loadfile>
+		<loadfile property="verRevision" srcfile="${verFile}">
+			<filterchain>
+				<linecontainsregexp>
+					<regexp pattern="const int MMCore_versionMajor\s=\s(\d+), MMCore_versionMinor\s=\s(\d+), MMCore_versionPatch\s=\s(\d+);*" />
+				</linecontainsregexp>
+				<tabstospaces />
+				<striplinebreaks />
+				<tokenfilter>
+					<replaceregex pattern="const int MMCore_versionMajor\s=\s(\d+), MMCore_versionMinor\s=\s(\d+), MMCore_versionPatch\s=\s(\d+);*" replace="\3" flags="g" />
+				</tokenfilter>
+			</filterchain>
+		</loadfile>
+		<property name="verMMCore" value="${verMajor}.${verMinor}.${verRevision}" />
+		<echo message="MMCore API version: ${verMMCore}" />
+	</target>
 	<target name="deps">
 		<ant antfile="buildscripts/fetchdeps.xml" target="resolve" />
 	</target>
@@ -27,6 +68,7 @@
 		<antcall target="compile" />
 		<antcall target="jarbundle" />
 		<antcall target="stage" />
+		<antcall target="package" />
 	</target>
 	<target name="rebuild">
 		<antcall target="clean" />
@@ -35,10 +77,11 @@
 	<target name="clean" depends="clean.win" />
 	<target name="compile" depends="compile.win" />
 	<target name="stage" depends="stage.win" />
+	<target name="package" depends="package.win" />
 	<target name="cleanci">
 		<delete dir="${build.dir}" />
 		<delete dir="${install.dir}" />
-	</target>
+	</target>	
 	<target name="clean.win">
       <echo message="Running clean on Windows system" />
 		<exec executable="msbuild.exe" failonerror="true">
@@ -86,5 +129,17 @@
     			<include name="MMCoreJ_wrap.dll"/>
 			</fileset>
 		</copy>
+	</target>
+	<target name="package.win" if="os.iswindows" depends="test.os,ver">
+		<echo message="Creating installation package(s) on Windows system" />
+		<mkdir dir="${install.dir}" />
+		<zip destfile="${install.dir}/MMCoreJ_${verMMCore}.${build.number}_x64.zip">
+			<zipfileset dir="${build.dir}/x64" includes="MMCoreJ_wrap.dll,MMCoreJ.jar" />
+  		</zip>
+		<exec executable="./dependencies/InnoSetup/iscc.exe" failonerror="true">
+            <arg value="/DBUNDLE_VERSION=${verMMCore}" />
+            <arg value="/DBUILD_NUMBER=${build.number}" />
+            <arg value="./buildscripts/install_MMCoreJ.iss" />
+        </exec>
 	</target>
 </project>

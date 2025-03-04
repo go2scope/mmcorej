@@ -1,3 +1,6 @@
 .vs
-dependencies
+dependencies/*
+!dependencies/vcredist/
+!dependencies/InnoSetup/
 build
+dist
