@@ -4,3 +4,4 @@ dependencies/*
 !dependencies/InnoSetup/
 build
 dist
+.idea/
