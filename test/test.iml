@@ -10,10 +10,14 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../build/x64/MMCoreJ.jar!/" />
+          <root url="file://$MODULE_DIR$/../build/x64" />
         </CLASSES>
         <JAVADOC />
+        <NATIVE>
+          <root url="file://$MODULE_DIR$/../build/x64" />
+        </NATIVE>
         <SOURCES />
+        <jarDirectory url="file://$MODULE_DIR$/../build/x64" recursive="false" />
       </library>
     </orderEntry>
   </component>
