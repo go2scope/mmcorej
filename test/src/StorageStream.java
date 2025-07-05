@@ -1,6 +1,10 @@
 import mmcorej.*;
 
-public class AcqStorageTest {
+/**
+ * Demonstration on how to use attached storage (dataset) to automatically
+ * stream circular buffer to disk
+ */
+public class StorageStream {
     public static void main(String[] args) {
         // instantiate MMCore
         CMMCore core = new CMMCore();
@@ -44,6 +48,8 @@ public class AcqStorageTest {
             core.setProperty(store, "FlushCycle", 10);   // refresh rate (in frames) for data files
 
             core.setCircularBufferMemoryFootprint(8192);
+            // it is important to flush the circular buffer before attaching the dataset
+            // otherwise any residual images might be stored in the new dataset
             core.clearCircularBuffer();
 
             // take one image to "warm up" the camera and get actual image dimensions
@@ -65,38 +71,21 @@ public class AcqStorageTest {
             shape.add(numberOfTimepoints); // time points
             shape.add(h); // second dimension y
             shape.add(w); // first dimension x
-            int handle = core.createDataset(saveLocation, "acq_test", shape, type, "", 0);
+            int handle = core.createDataset(saveLocation, "stream", shape, type, "", 0);
+            core.attachDatasetToCircularBuffer(handle);
 
             core.logMessage("START OF ACQUISITION");
             core.startSequenceAcquisition(numberOfTimepoints, 0.0, true);
-
-            for(int i = 0; i < numberOfTimepoints; i++) {
-
-                // let the buffer fill
-                boolean firstWait = true;
-                while (core.getRemainingImageCount() == 0) {
-                    if (firstWait)
-                        System.out.println("Waiting for images...");
-                    firstWait = false;
-                    Thread.sleep(50);
-                }
-
-                LongVector coords = new LongVector();
-                coords.add(i);
-                coords.add(0);
-                coords.add(0);
-
-                // take the next image from circular buf
-                core.appendNextToDataset(handle, coords, "", 0);
-                System.out.println("Saved image " + (i + 1));
+            while (core.isSequenceRunning()) {
+                Thread.sleep(1000);
+                System.out.println("Acquiring...");
             }
-            long endAcq = System.nanoTime();
-            core.stopSequenceAcquisition();
 
             core.logMessage("END OF ACQUISITION");
-            long end = System.nanoTime();
+            core.attachDatasetToCircularBuffer(-1); // detach dataset from buffer
+            core.closeDataset(handle);
 
-            // unload all devices (not really necessary)
+            // unload all devices
             core.unloadAllDevices();
 
         } catch (Exception e) {
