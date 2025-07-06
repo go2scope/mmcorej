@@ -81,7 +81,13 @@ public class StorageStream {
                 System.out.println("Acquiring...");
             }
 
+            String error = core.getLastAttachedDatasetError();
+            if (error != null && !error.isEmpty())
+                System.out.println("Error: " + error);
+
             core.logMessage("END OF ACQUISITION");
+            int numberOfImages = core.getDatasetImageCount(handle);
+            System.out.println("Number of images in dataset: " + numberOfImages);
             core.attachDatasetToCircularBuffer(-1); // detach dataset from buffer
             core.closeDataset(handle);
 
